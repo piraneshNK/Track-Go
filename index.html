@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track&Go</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAo9j9+f10X4180jR8p4S/LzJkF94x8p3SjT2yV8=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-2h8gP19L79J+5e4W6aE7e79+o7q4s7+I9P4h4e89n6Y=" crossorigin=""></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1f2937;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: auto;
+            background-color: #fff;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 1.5rem;
+            overflow: hidden;
+        }
+        .view {
+            padding: 2rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .view.active {
+            opacity: 1;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px -2px rgba(0, 0, 0, 0.15);
+        }
+        #map {
+            flex-grow: 1;
+            min-height: 400px;
+            border-radius: 0.75rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+    <!-- Main App Container -->
+    <div class="app-container">
+        
+        <!-- Home View -->
+        <div id="home-view" class="view active justify-center items-center text-center space-y-8">
+            <h1 class="text-4xl font-extrabold text-gray-800">Track&Go</h1>
+            <svg class="w-24 h-24 text-blue-500 mx-auto" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM5.5 8a.5.5 0 01.5-.5h8a.5.5 0 010 1H6a.5.5 0 01-.5-.5zM10 5a.5.5 0 01.5.5v8a.5.5 0 01-1 0v-8a.5.5 0 01.5-.5z" clip-rule="evenodd" fill-rule="evenodd"></path>
+            </svg>
+            <p class="text-lg text-gray-600">Choose an option to get started.</p>
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <button id="track-bus-btn" class="btn bg-blue-500 text-white hover:bg-blue-600">Track Bus</button>
+                <button id="bus-routes-btn" class="btn bg-gray-300 text-gray-700 hover:bg-gray-400">Bus Routes</button>
+            </div>
+        </div>
+
+        <!-- Bus List View -->
+        <div id="bus-list-view" class="view hidden">
+            <div class="flex items-center mb-6">
+                <button id="back-to-home" class="text-gray-500 hover:text-gray-700 transition mr-4 p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </button>
+                <h2 class="text-2xl font-bold text-gray-800">Live Bus Locations</h2>
+            </div>
+            <div id="bus-list-container" class="space-y-4 overflow-y-auto flex-grow"></div>
+            <div id="loading-indicator" class="text-center mt-8 text-gray-500 hidden">
+                <svg class="animate-spin h-8 w-8 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-2 text-sm">Connecting to live data...</p>
+            </div>
+        </div>
+
+        <!-- Map View -->
+        <div id="map-view" class="view hidden">
+            <div class="flex items-center mb-6">
+                <button id="back-to-list" class="text-gray-500 hover:text-gray-700 transition mr-4 p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </button>
+                <h2 id="map-title" class="text-2xl font-bold text-gray-800"></h2>
+            </div>
+            <div id="map"></div>
+        </div>
+
+        <!-- Bus Routes View -->
+        <div id="bus-routes-view" class="view hidden">
+            <div class="flex items-center mb-6">
+                <button id="back-from-routes" class="text-gray-500 hover:text-gray-700 transition mr-4 p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </button>
+                <h2 class="text-2xl font-bold text-gray-800">Bus Routes</h2>
+            </div>
+            <div class="flex-grow flex items-center justify-center text-center text-gray-500">
+                <p>This feature is coming soon!</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            databaseURL: "https://bustrackingsystem-9133b-default-rtdb.firebaseio.com/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const busesRef = db.ref('buses');
+
+        const homeView = document.getElementById('home-view');
+        const busListView = document.getElementById('bus-list-view');
+        const busRoutesView = document.getElementById('bus-routes-view');
+        const mapView = document.getElementById('map-view');
+        const trackBusBtn = document.getElementById('track-bus-btn');
+        const busRoutesBtn = document.getElementById('bus-routes-btn');
+        const backToHomeBtn = document.getElementById('back-to-home');
+        const backFromRoutesBtn = document.getElementById('back-from-routes');
+        const backToListBtn = document.getElementById('back-to-list');
+        const busListContainer = document.getElementById('bus-list-container');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const mapTitle = document.getElementById('map-title');
+
+        let busListListener = null;
+        let busMapListener = null;
+        let mapInstance = null;
+        let markerInstance = null;
+        let lastBusId = null;
+        
+        const showView = (viewToShow) => {
+            const allViews = [homeView, busListView, busRoutesView, mapView];
+            allViews.forEach(view => view.classList.remove('active'));
+            viewToShow.classList.add('active');
+            allViews.forEach(view => view.classList.toggle('hidden', view !== viewToShow));
+        };
+
+        const createBusCard = (busId, busData) => {
+            const card = document.createElement('div');
+            card.className = 'card space-y-2';
+            const statusColor = busData.status === 'Running' ? 'text-green-500' : 'text-red-500';
+            card.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-gray-800">${busId}</h3>
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 rounded-full mr-2 ${busData.status === 'Running' ? 'bg-green-500' : 'bg-red-500'} animate-pulse"></div>
+                        <span class="text-sm font-semibold ${statusColor}">${busData.status}</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-600">
+                    <div><strong>Speed:</strong> ${busData.speed ?? 0} km/h</div>
+                    <div><strong>Latitude:</strong> ${typeof busData.latitude === 'number' ? busData.latitude.toFixed(6) : 'N/A'}</div>
+                    <div class="col-span-2"><strong>Longitude:</strong> ${typeof busData.longitude === 'number' ? busData.longitude.toFixed(6) : 'N/A'}</div>
+                </div>
+            `;
+            card.addEventListener('click', () => showBusOnMap(busId));
+            return card;
+        };
+
+        const attachBusListListener = () => {
+            if (busListListener) busesRef.off('value', busListListener);
+            loadingIndicator.classList.remove('hidden');
+            busListContainer.innerHTML = '';
+            busListListener = busesRef.on('value', (snapshot) => {
+                loadingIndicator.classList.add('hidden');
+                const buses = snapshot.val();
+                busListContainer.innerHTML = '';
+                if (!buses) {
+                    busListContainer.innerHTML = `<div class="text-center text-gray-500 py-8">No buses found.</div>`;
+                    return;
+                }
+                Object.keys(buses).forEach(busId => busListContainer.appendChild(createBusCard(busId, buses[busId])));
+            }, (error) => {
+                busListContainer.innerHTML = `<div class="text-center text-red-500 py-8">Error: ${error.message}</div>`;
+                loadingIndicator.classList.add('hidden');
+            });
+        };
+
+        const detachBusListListener = () => {
+            if (busListListener) {
+                busesRef.off('value', busListListener);
+                busListListener = null;
+            }
+        };
+
+        const showBusOnMap = (busId) => {
+            showView(mapView);
+            mapTitle.textContent = `Tracking ${busId}`;
+            if (busMapListener && lastBusId) busesRef.child(lastBusId).off('value', busMapListener);
+
+            const busIconSvg = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#3B82F6"><path d="M18.5,4H5.5A2.5,2.5,0,0,0,3,6.5v8A2.5,2.5,0,0,0,5.5,17H6v1a2,2,0,0,0,4,0v-1h4v1a2,2,0,0,0,4,0v-1h.5A2.5,2.5,0,0,0,21,14.5v-8A2.5,2.5,0,0,0,18.5,4ZM5.5,6H18.5a.5.5,0,0,1,.5.5V9H5V6.5A.5.5,0,0,1,5.5,6ZM5,14.5V11H19v3.5a.5.5,0,0,1-.5.5H5.5A.5.5,0,0,1,5,14.5Z"/></svg>`;
+            const busIconUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(busIconSvg)}`;
+            const busIcon = L.icon({ iconUrl: busIconUrl, iconSize: [38, 38], iconAnchor: [19, 38], popupAnchor: [0, -38] });
+
+            if (!mapInstance) {
+                mapInstance = L.map('map').setView([0, 0], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(mapInstance);
+            }
+            if (markerInstance) markerInstance.remove();
+            markerInstance = L.marker([0, 0], { icon: busIcon }).addTo(mapInstance);
+
+            lastBusId = busId;
+            const busRef = busesRef.child(busId);
+            busMapListener = busRef.on('value', (snapshot) => {
+                const busData = snapshot.val();
+                if (busData && typeof busData.latitude === 'number' && typeof busData.longitude === 'number') {
+                    const newLatLng = [busData.latitude, busData.longitude];
+                    mapInstance.setView(newLatLng, 16);
+                    markerInstance.setLatLng(newLatLng);
+                    markerInstance.bindPopup(`<b>${busId}</b><br>Lat: ${busData.latitude.toFixed(6)}<br>Lon: ${busData.longitude.toFixed(6)}<br>Speed: ${busData.speed ?? 0} km/h`).openPopup();
+                }
+            });
+        };
+
+        const detachMapListener = () => {
+            if (busMapListener && lastBusId) {
+                busesRef.child(lastBusId).off('value', busMapListener);
+                busMapListener = null;
+                lastBusId = null;
+            }
+        };
+
+        trackBusBtn.addEventListener('click', () => {
+            showView(busListView);
+            detachMapListener();
+            attachBusListListener();
+        });
+
+        busRoutesBtn.addEventListener('click', () => {
+            showView(busRoutesView);
+            detachBusListListener();
+            detachMapListener();
+        });
+
+        backToHomeBtn.addEventListener('click', () => {
+            detachBusListListener();
+            detachMapListener();
+            showView(homeView);
+        });
+
+        backFromRoutesBtn.addEventListener('click', () => showView(homeView));
+
+        backToListBtn.addEventListener('click', () => {
+            detachMapListener();
+            showView(busListView);
+            attachBusListListener();
+        });
+
+        showView(homeView);
+    </script>
+</body>
+</html>
