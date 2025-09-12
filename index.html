@@ -30,12 +30,11 @@
     #map {
       min-height: 400px;
       width: 100%;
-      display: block;
       border-radius: 1rem;
     }
-    .view { 
-      padding: 1.5rem; 
-      flex-grow: 1; 
+    .view {
+      padding: 1.5rem;
+      flex-grow: 1;
       display: none;
       opacity: 0;
       transform: translateY(10px);
@@ -77,16 +76,12 @@
       transition: background 0.2s ease;
     }
     .fab:hover { background: #2563eb; }
-
-    /* Logo Animation */
     @keyframes logoBounce {
       0% { transform: scale(0.8); opacity: 0; }
       60% { transform: scale(1.05); opacity: 1; }
       100% { transform: scale(1); }
     }
-    .logo-animate {
-      animation: logoBounce 0.8s ease-in-out;
-    }
+    .logo-animate { animation: logoBounce 0.8s ease-in-out; }
   </style>
 </head>
 <body class="flex items-center justify-center">
@@ -123,7 +118,7 @@
   </div>
 
   <script>
-    // Firebase Setup
+    // ✅ Firebase Setup
     const firebaseConfig = {
       databaseURL: "https://bustrackingsystem-9133b-default-rtdb.firebaseio.com/"
     };
@@ -131,7 +126,7 @@
     const db = firebase.database();
     const busesRef = db.ref('buses');
 
-    // DOM
+    // DOM Elements
     const homeView = document.getElementById("home-view");
     const busListView = document.getElementById("bus-list-view");
     const mapView = document.getElementById("map-view");
@@ -142,6 +137,14 @@
     let mapInstance = null;
     let markerInstance = null;
     let currentBusId = null;
+
+    // Custom Bus Icon (SVG)
+    const busIcon = L.icon({
+      iconUrl: "busicon.png", // make sure busicon.png is in same folder or /public
+      iconSize: [40, 40],
+      iconAnchor: [20, 40],
+      popupAnchor: [0, -35],
+    });
 
     function showView(view) {
       [homeView, busListView, mapView].forEach(v => v.classList.remove("active"));
@@ -193,7 +196,7 @@
       setTimeout(() => mapInstance.invalidateSize(), 200);
 
       if (markerInstance) markerInstance.remove();
-      markerInstance = L.marker([20, 78]).addTo(mapInstance);
+      markerInstance = L.marker([20, 78], { icon: busIcon }).addTo(mapInstance);
 
       busesRef.child(busId).on("value", (snap) => {
         const bus = snap.val();
@@ -207,7 +210,6 @@
       });
     }
 
-    // Event Listeners
     document.getElementById("track-bus-btn").addEventListener("click", () => {
       showView(busListView);
       attachBusList();
