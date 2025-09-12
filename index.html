@@ -10,7 +10,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #eff6ff, #e0f2fe);
+    }
     .app-container {
       width: 100%;
       max-width: 480px;
@@ -18,42 +21,97 @@
       display: flex;
       flex-direction: column;
       margin: auto;
-      background-color: #fff;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(20px);
       border-radius: 1.5rem;
       overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     }
     #map {
-      min-height: 400px;  /* ✅ ensure visible height */
+      min-height: 400px;
       width: 100%;
       display: block;
-      border-radius: 0.75rem;
+      border-radius: 1rem;
     }
-    .view { padding: 1rem; flex-grow: 1; display: none; }
-    .view.active { display: flex; flex-direction: column; }
+    .view { 
+      padding: 1.5rem; 
+      flex-grow: 1; 
+      display: none;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .view.active {
+      display: flex;
+      flex-direction: column;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .bus-card {
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(10px);
+      padding: 1rem;
+      border-radius: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .bus-card:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.85);
+    }
+    .fab {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 1.5rem;
+      background: #3b82f6;
+      color: white;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .fab:hover { background: #2563eb; }
   </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center">
+<body class="flex items-center justify-center">
 
   <div class="app-container">
     <!-- Home View -->
-    <div id="home-view" class="view active justify-center items-center text-center space-y-4">
-      <h1 class="text-3xl font-bold">Track&Go</h1>
-      <button id="track-bus-btn" class="bg-blue-500 text-white p-3 rounded-lg">Track Bus</button>
+    <div id="home-view" class="view active justify-center items-center text-center space-y-6">
+      <h1 class="text-4xl font-extrabold text-gray-800">Track&Go</h1>
+      <svg class="w-24 h-24 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 2a10 10 0 100 20 10 10 0 000-20zM7 10h10a1 1 0 110 2H7a1 1 0 110-2z" />
+      </svg>
+      <p class="text-gray-600 text-lg">Live bus tracking made simple</p>
+      <button id="track-bus-btn" class="px-6 py-3 rounded-full bg-blue-500 text-white font-semibold shadow-md hover:bg-blue-600 transition">
+        Track Live Buses
+      </button>
     </div>
 
     <!-- Bus List View -->
     <div id="bus-list-view" class="view">
-      <button id="back-to-home" class="text-sm text-blue-500 mb-2">&larr; Back</button>
-      <h2 class="text-xl font-bold mb-4">Live Bus List</h2>
-      <div id="bus-list-container" class="space-y-3"></div>
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Available Buses</h2>
+      <div id="bus-list-container" class="space-y-3 overflow-y-auto"></div>
     </div>
 
     <!-- Map View -->
     <div id="map-view" class="view">
-      <button id="back-to-list" class="text-sm text-blue-500 mb-2">&larr; Back</button>
-      <h2 id="map-title" class="text-xl font-bold mb-4"></h2>
+      <h2 id="map-title" class="text-2xl font-bold text-gray-800 mb-3"></h2>
       <div id="map"></div>
     </div>
+  </div>
+
+  <!-- Floating Back Button -->
+  <div id="back-btn" class="fab hidden">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+    </svg>
   </div>
 
   <script>
@@ -65,10 +123,11 @@
     const db = firebase.database();
     const busesRef = db.ref('buses');
 
-    // DOM Elements
+    // DOM
     const homeView = document.getElementById("home-view");
     const busListView = document.getElementById("bus-list-view");
     const mapView = document.getElementById("map-view");
+    const backBtn = document.getElementById("back-btn");
     const busListContainer = document.getElementById("bus-list-container");
     const mapTitle = document.getElementById("map-title");
 
@@ -79,12 +138,21 @@
     function showView(view) {
       [homeView, busListView, mapView].forEach(v => v.classList.remove("active"));
       view.classList.add("active");
+      backBtn.classList.toggle("hidden", view === homeView);
     }
 
     function createBusCard(busId, data) {
       const div = document.createElement("div");
-      div.className = "p-3 bg-gray-100 rounded-lg cursor-pointer";
-      div.innerHTML = `<strong>${busId}</strong><br>Lat: ${data.latitude ?? 'N/A'}<br>Lon: ${data.longitude ?? 'N/A'}`;
+      div.className = "bus-card";
+      const statusColor = data.status === "Running" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700";
+      div.innerHTML = `
+        <div class="flex justify-between items-center">
+          <h3 class="font-bold text-lg">${busId}</h3>
+          <span class="px-3 py-1 text-xs rounded-full ${statusColor}">${data.status}</span>
+        </div>
+        <p class="text-sm text-gray-600">Lat: ${data.latitude ?? 'N/A'} | Lon: ${data.longitude ?? 'N/A'}</p>
+        <p class="text-sm text-gray-500">Speed: ${data.speed ?? '0'} km/h</p>
+      `;
       div.addEventListener("click", () => showBusOnMap(busId));
       return div;
     }
@@ -94,7 +162,7 @@
         busListContainer.innerHTML = "";
         const buses = snap.val();
         if (!buses) {
-          busListContainer.innerHTML = "<p class='text-gray-500'>No buses available</p>";
+          busListContainer.innerHTML = "<p class='text-gray-500 text-center'>No buses available</p>";
           return;
         }
         Object.keys(buses).forEach(busId => {
@@ -105,17 +173,16 @@
 
     function showBusOnMap(busId) {
       showView(mapView);
-      mapTitle.textContent = `Tracking ${busId}`;
+      mapTitle.textContent = `Tracking: ${busId}`;
       currentBusId = busId;
 
       if (!mapInstance) {
-        mapInstance = L.map("map").setView([20, 78], 5); // ✅ start in India center
+        mapInstance = L.map("map").setView([20, 78], 5);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: "&copy; OpenStreetMap contributors"
         }).addTo(mapInstance);
       }
-
-      setTimeout(() => mapInstance.invalidateSize(), 200); // ✅ force redraw after view visible
+      setTimeout(() => mapInstance.invalidateSize(), 200);
 
       if (markerInstance) markerInstance.remove();
       markerInstance = L.marker([20, 78]).addTo(mapInstance);
@@ -125,18 +192,20 @@
         if (bus && typeof bus.latitude === "number" && typeof bus.longitude === "number") {
           const pos = [bus.latitude, bus.longitude];
           mapInstance.setView(pos, 16);
-          markerInstance.setLatLng(pos).bindPopup(`<b>${busId}</b><br>Lat: ${bus.latitude}<br>Lon: ${bus.longitude}`).openPopup();
+          markerInstance.setLatLng(pos).bindPopup(`<b>${busId}</b><br>Lat: ${bus.latitude}<br>Lon: ${bus.longitude}<br>Speed: ${bus.speed} km/h`).openPopup();
         }
       });
     }
 
+    // Event Listeners
     document.getElementById("track-bus-btn").addEventListener("click", () => {
       showView(busListView);
       attachBusList();
     });
-
-    document.getElementById("back-to-home").addEventListener("click", () => showView(homeView));
-    document.getElementById("back-to-list").addEventListener("click", () => showView(busListView));
+    backBtn.addEventListener("click", () => {
+      if (mapView.classList.contains("active")) showView(busListView);
+      else showView(homeView);
+    });
   </script>
 </body>
 </html>
