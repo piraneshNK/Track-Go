@@ -46,18 +46,19 @@
       opacity: 1;
       transform: translateY(0);
     }
-    .bus-card {
+    .bus-card, .ticket-card {
       background: rgba(255, 255, 255, 0.7);
       border: 1px solid rgba(0, 0, 0, 0.05);
       backdrop-filter: blur(10px);
-      padding: 1rem;
+      padding: 1.5rem;
       border-radius: 1rem;
       cursor: pointer;
-      transition: transform 0.2s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .bus-card:hover {
+    .bus-card:hover, .ticket-card:hover {
       transform: translateY(-2px);
       background: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     }
     .fab {
       position: fixed;
@@ -87,30 +88,51 @@
 <body class="flex items-center justify-center">
 
   <div class="app-container">
-    <!-- Home View -->
     <div id="home-view" class="view active justify-center items-center text-center space-y-6">
       <h1 class="text-4xl font-extrabold text-gray-800">Track&Go</h1>
       <img src="busicon.png" alt="Bus Logo" class="mx-auto w-28 h-28 drop-shadow-lg logo-animate">
       <p class="text-gray-600 text-lg">Live bus tracking made simple</p>
-      <button id="track-bus-btn" class="px-6 py-3 rounded-full bg-blue-500 text-white font-semibold shadow-md hover:bg-blue-600 transition">
-        Track Live Buses
-      </button>
+      <div class="flex flex-col space-y-4">
+        <button id="track-bus-btn" class="px-6 py-3 rounded-full bg-blue-500 text-white font-semibold shadow-md hover:bg-blue-600 transition">
+          Track Live Buses
+        </button>
+        <button id="buy-ticket-btn" class="px-6 py-3 rounded-full bg-green-500 text-white font-semibold shadow-md hover:bg-green-600 transition">
+          Buy Ticket
+        </button>
+      </div>
     </div>
 
-    <!-- Bus List View -->
     <div id="bus-list-view" class="view">
       <h2 class="text-2xl font-bold text-gray-800 mb-4">Available Buses</h2>
       <div id="bus-list-container" class="space-y-3 overflow-y-auto"></div>
     </div>
 
-    <!-- Map View -->
     <div id="map-view" class="view">
       <h2 id="map-title" class="text-2xl font-bold text-gray-800 mb-3"></h2>
       <div id="map"></div>
     </div>
+
+    <div id="ticket-view" class="view">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Choose Your Ticket</h2>
+      <div class="space-y-4">
+        <div class="ticket-card flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-lg text-gray-800">Bus Pass (Monthly)</h3>
+            <p class="text-sm text-gray-600">Unlimited rides for a month</p>
+          </div>
+          <span class="text-xl font-bold text-blue-600">₹500</span>
+        </div>
+        <div class="ticket-card flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-lg text-gray-800">Single Ride Ticket</h3>
+            <p class="text-sm text-gray-600">Valid for one trip</p>
+          </div>
+          <span class="text-xl font-bold text-blue-600">₹10</span>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Floating Back Button -->
   <div id="back-btn" class="fab hidden">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -130,6 +152,7 @@
     const homeView = document.getElementById("home-view");
     const busListView = document.getElementById("bus-list-view");
     const mapView = document.getElementById("map-view");
+    const ticketView = document.getElementById("ticket-view");
     const backBtn = document.getElementById("back-btn");
     const busListContainer = document.getElementById("bus-list-container");
     const mapTitle = document.getElementById("map-title");
@@ -147,7 +170,7 @@
     });
 
     function showView(view) {
-      [homeView, busListView, mapView].forEach(v => v.classList.remove("active"));
+      [homeView, busListView, mapView, ticketView].forEach(v => v.classList.remove("active"));
       view.classList.add("active");
       backBtn.classList.toggle("hidden", view === homeView);
     }
@@ -215,9 +238,18 @@
       attachBusList();
     });
 
+    document.getElementById("buy-ticket-btn").addEventListener("click", () => {
+      showView(ticketView);
+    });
+
     backBtn.addEventListener("click", () => {
-      if (mapView.classList.contains("active")) showView(busListView);
-      else showView(homeView);
+      if (mapView.classList.contains("active")) {
+        showView(busListView);
+      } else if (busListView.classList.contains("active")) {
+        showView(homeView);
+      } else if (ticketView.classList.contains("active")) {
+        showView(homeView);
+      }
     });
   </script>
 </body>
