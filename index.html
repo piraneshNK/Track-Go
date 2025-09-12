@@ -77,6 +77,16 @@
       transition: background 0.2s ease;
     }
     .fab:hover { background: #2563eb; }
+
+    /* Logo Animation */
+    @keyframes logoBounce {
+      0% { transform: scale(0.8); opacity: 0; }
+      60% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+    .logo-animate {
+      animation: logoBounce 0.8s ease-in-out;
+    }
   </style>
 </head>
 <body class="flex items-center justify-center">
@@ -85,9 +95,7 @@
     <!-- Home View -->
     <div id="home-view" class="view active justify-center items-center text-center space-y-6">
       <h1 class="text-4xl font-extrabold text-gray-800">Track&Go</h1>
-      <svg class="w-24 h-24 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M12 2a10 10 0 100 20 10 10 0 000-20zM7 10h10a1 1 0 110 2H7a1 1 0 110-2z" />
-      </svg>
+      <img src="busicon.png" alt="Bus Logo" class="mx-auto w-28 h-28 drop-shadow-lg logo-animate">
       <p class="text-gray-600 text-lg">Live bus tracking made simple</p>
       <button id="track-bus-btn" class="px-6 py-3 rounded-full bg-blue-500 text-white font-semibold shadow-md hover:bg-blue-600 transition">
         Track Live Buses
@@ -192,7 +200,9 @@
         if (bus && typeof bus.latitude === "number" && typeof bus.longitude === "number") {
           const pos = [bus.latitude, bus.longitude];
           mapInstance.setView(pos, 16);
-          markerInstance.setLatLng(pos).bindPopup(`<b>${busId}</b><br>Lat: ${bus.latitude}<br>Lon: ${bus.longitude}<br>Speed: ${bus.speed} km/h`).openPopup();
+          markerInstance.setLatLng(pos).bindPopup(
+            `<b>${busId}</b><br>Lat: ${bus.latitude}<br>Lon: ${bus.longitude}<br>Speed: ${bus.speed} km/h`
+          ).openPopup();
         }
       });
     }
@@ -202,6 +212,7 @@
       showView(busListView);
       attachBusList();
     });
+
     backBtn.addEventListener("click", () => {
       if (mapView.classList.contains("active")) showView(busListView);
       else showView(homeView);
