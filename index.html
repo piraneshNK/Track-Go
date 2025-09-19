@@ -1,256 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ROCKY</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <title>LinkGuard - Phishing Link Checker</title>
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #eff6ff, #e0f2fe);
-    }
-    .app-container {
-      width: 100%;
-      max-width: 480px;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      margin: auto;
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(20px);
-      border-radius: 1.5rem;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    }
-    #map {
-      min-height: 400px;
-      width: 100%;
-      border-radius: 1rem;
-    }
-    .view {
-      padding: 1.5rem;
-      flex-grow: 1;
-      display: none;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-    .view.active {
-      display: flex;
-      flex-direction: column;
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .bus-card, .ticket-card {
-      background: rgba(255, 255, 255, 0.7);
-      border: 1px solid rgba(0, 0, 0, 0.05);
-      backdrop-filter: blur(10px);
-      padding: 1.5rem;
-      border-radius: 1rem;
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .bus-card:hover, .ticket-card:hover {
-      transform: translateY(-2px);
-      background: rgba(255, 255, 255, 0.85);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    }
-    .fab {
-      position: fixed;
-      bottom: 1.5rem;
-      left: 1.5rem;
-      background: #3b82f6;
-      color: white;
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-    .fab:hover { background: #2563eb; }
-    @keyframes logoBounce {
-      0% { transform: scale(0.8); opacity: 0; }
-      60% { transform: scale(1.05); opacity: 1; }
-      100% { transform: scale(1); }
-    }
-    .logo-animate { animation: logoBounce 0.8s ease-in-out; }
+    body { font-family: Arial, sans-serif; text-align: center; margin: 50px; background: #f9fafc; }
+    input { width: 300px; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
+    button { padding: 10px 15px; margin-left: 5px; border: none; border-radius: 6px; background: #007BFF; color: white; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    #resultBox { margin-top: 30px; padding: 20px; border-radius: 8px; width: 400px; margin-left: auto; margin-right: auto; font-size: 18px; font-weight: bold; }
+    .safe { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .unsafe { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
   </style>
 </head>
-<body class="flex items-center justify-center">
+<body>
+  <h1>🔍 LinkGuard</h1>
+  <p>Paste a link below to check if it’s safe.</p>
 
-  <div class="app-container">
-    <div id="home-view" class="view active justify-center items-center text-center space-y-6">
-      <h1 class="text-4xl font-extrabold text-gray-800">Track&Go</h1>
-      <img src="busicon.png" alt="Bus Logo" class="mx-auto w-28 h-28 drop-shadow-lg logo-animate">
-      <p class="text-gray-600 text-lg">Live bus tracking made simple</p>
-      <div class="flex flex-col space-y-4">
-        <button id="track-bus-btn" class="px-6 py-3 rounded-full bg-blue-500 text-white font-semibold shadow-md hover:bg-blue-600 transition">
-          Track Live Buses
-        </button>
-        <button id="buy-ticket-btn" class="px-6 py-3 rounded-full bg-green-500 text-white font-semibold shadow-md hover:bg-green-600 transition">
-          Buy Ticket
-        </button>
-      </div>
-    </div>
+  <input id="urlInput" type="text" placeholder="https://example.com">
+  <button onclick="checkUrl()">Check</button>
 
-    <div id="bus-list-view" class="view">
-      <h2 class="text-2xl font-bold text-gray-800 mb-4">Available Buses</h2>
-      <div id="bus-list-container" class="space-y-3 overflow-y-auto"></div>
-    </div>
-
-    <div id="map-view" class="view">
-      <h2 id="map-title" class="text-2xl font-bold text-gray-800 mb-3"></h2>
-      <div id="map"></div>
-    </div>
-
-    <div id="ticket-view" class="view">
-      <h2 class="text-2xl font-bold text-gray-800 mb-4">Choose Your Ticket</h2>
-      <div class="space-y-4">
-        <div class="ticket-card flex justify-between items-center">
-          <div>
-            <h3 class="font-bold text-lg text-gray-800">Bus Pass (Monthly)</h3>
-            <p class="text-sm text-gray-600">Unlimited rides for a month</p>
-          </div>
-          <span class="text-xl font-bold text-blue-600">₹500</span>
-        </div>
-        <div class="ticket-card flex justify-between items-center">
-          <div>
-            <h3 class="font-bold text-lg text-gray-800">Single Ride Ticket</h3>
-            <p class="text-sm text-gray-600">Valid for one trip</p>
-          </div>
-          <span class="text-xl font-bold text-blue-600">₹10</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="back-btn" class="fab hidden">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-    </svg>
-  </div>
+  <div id="resultBox">No scan yet</div>
 
   <script>
-    // ✅ Firebase Setup
-    const firebaseConfig = {
-      databaseURL: "https://bustrackingsystem-9133b-default-rtdb.firebaseio.com/"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const busesRef = db.ref('buses');
+    const API_KEY = "YOUR_GOOGLE_API_KEY"; // Replace with your Safe Browsing API key
+    const ENDPOINT = `https://safebrowsing.googleapis.com/v5/encodedFullHashes:find?key=${API_KEY}`;
 
-    // DOM Elements
-    const homeView = document.getElementById("home-view");
-    const busListView = document.getElementById("bus-list-view");
-    const mapView = document.getElementById("map-view");
-    const ticketView = document.getElementById("ticket-view");
-    const backBtn = document.getElementById("back-btn");
-    const busListContainer = document.getElementById("bus-list-container");
-    const mapTitle = document.getElementById("map-title");
+    async function checkUrl() {
+      const url = document.getElementById("urlInput").value.trim();
+      const resultBox = document.getElementById("resultBox");
 
-    let mapInstance = null;
-    let markerInstance = null;
-    let currentBusId = null;
+      if (!url) {
+        resultBox.innerHTML = "⚠️ Please enter a URL.";
+        resultBox.className = "unsafe";
+        return;
+      }
 
-    // Custom Bus Icon (SVG)
-    const busIcon = L.icon({
-      iconUrl: "busicon.png", // make sure busicon.png is in same folder or /public
-      iconSize: [40, 40],
-      iconAnchor: [20, 40],
-      popupAnchor: [0, -35],
-    });
+      resultBox.innerHTML = "⏳ Checking...";
+      resultBox.className = "";
 
-    function showView(view) {
-      [homeView, busListView, mapView, ticketView].forEach(v => v.classList.remove("active"));
-      view.classList.add("active");
-      backBtn.classList.toggle("hidden", view === homeView);
-    }
-
-    function createBusCard(busId, data) {
-      const div = document.createElement("div");
-      div.className = "bus-card";
-      const statusColor = data.status === "Running" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700";
-      div.innerHTML = `
-        <div class="flex justify-between items-center">
-          <h3 class="font-bold text-lg">${busId}</h3>
-          <span class="px-3 py-1 text-xs rounded-full ${statusColor}">${data.status}</span>
-        </div>
-        <p class="text-sm text-gray-600">Lat: ${data.latitude ?? 'N/A'} | Lon: ${data.longitude ?? 'N/A'}</p>
-        <p class="text-sm text-gray-500">Speed: ${data.speed ?? '0'} km/h</p>
-      `;
-      div.addEventListener("click", () => showBusOnMap(busId));
-      return div;
-    }
-
-    function attachBusList() {
-      busesRef.on("value", (snap) => {
-        busListContainer.innerHTML = "";
-        const buses = snap.val();
-        if (!buses) {
-          busListContainer.innerHTML = "<p class='text-gray-500 text-center'>No buses available</p>";
-          return;
+      const reqBody = {
+        client: { clientId: "linkguard", clientVersion: "1.0" },
+        threatInfo: {
+          threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE"],
+          platformTypes: ["ANY_PLATFORM"],
+          threatEntryTypes: ["URL"],
+          threatEntries: [{ url }]
         }
-        Object.keys(buses).forEach(busId => {
-          busListContainer.appendChild(createBusCard(busId, buses[busId]));
+      };
+
+      try {
+        const resp = await fetch(ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(reqBody)
         });
-      });
-    }
+        const data = await resp.json();
 
-    function showBusOnMap(busId) {
-      showView(mapView);
-      mapTitle.textContent = `Tracking: ${busId}`;
-      currentBusId = busId;
-
-      if (!mapInstance) {
-        mapInstance = L.map("map").setView([20, 78], 5);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: "&copy; OpenStreetMap contributors"
-        }).addTo(mapInstance);
-      }
-      setTimeout(() => mapInstance.invalidateSize(), 200);
-
-      if (markerInstance) markerInstance.remove();
-      markerInstance = L.marker([20, 78], { icon: busIcon }).addTo(mapInstance);
-
-      busesRef.child(busId).on("value", (snap) => {
-        const bus = snap.val();
-        if (bus && typeof bus.latitude === "number" && typeof bus.longitude === "number") {
-          const pos = [bus.latitude, bus.longitude];
-          mapInstance.setView(pos, 16);
-          markerInstance.setLatLng(pos).bindPopup(
-            `<b>${busId}</b><br>Lat: ${bus.latitude}<br>Lon: ${bus.longitude}<br>Speed: ${bus.speed} km/h`
-          ).openPopup();
+        if (data.matches && data.matches.length > 0) {
+          resultBox.innerHTML = `⚠️ Unsafe: ${data.matches[0].threatType}`;
+          resultBox.className = "unsafe";
+        } else {
+          resultBox.innerHTML = "✅ Safe website";
+          resultBox.className = "safe";
         }
-      });
-    }
-
-    document.getElementById("track-bus-btn").addEventListener("click", () => {
-      showView(busListView);
-      attachBusList();
-    });
-
-    document.getElementById("buy-ticket-btn").addEventListener("click", () => {
-      showView(ticketView);
-    });
-
-    backBtn.addEventListener("click", () => {
-      if (mapView.classList.contains("active")) {
-        showView(busListView);
-      } else if (busListView.classList.contains("active")) {
-        showView(homeView);
-      } else if (ticketView.classList.contains("active")) {
-        showView(homeView);
+      } catch (err) {
+        resultBox.innerHTML = "❌ Error checking the URL.";
+        resultBox.className = "unsafe";
+        console.error(err);
       }
-    });
+    }
   </script>
 </body>
 </html>
