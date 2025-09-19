@@ -4,41 +4,40 @@
   <title>LinkGuard - Professional Security Suite</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <header>
-    <div class="logo">
-      <i class="fa-solid fa-shield-halved"></i>
+<body style="font-family: 'Roboto', sans-serif; margin: 0; padding: 0; background-color: #1a1a2e; color: #e5e5e5; display: flex; flex-direction: column; align-items: center; min-height: 100vh;">
+  <header style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 20px 50px; background-color: #16213e; border-bottom: 1px solid #404066;">
+    <div class="logo" style="font-size: 24px; font-weight: bold;">
+      <i class="fa-solid fa-shield-halved" style="color: #4c8bf5; margin-right: 10px;"></i>
       <span>LinkGuard</span>
     </div>
     <nav>
-      <a href="#">Home</a>
-      <a href="#">About</a>
-      <a href="#">Statistics</a>
-      <a href="#">Settings</a>
+      <a href="#" style="color: #e5e5e5; text-decoration: none; margin-left: 20px; transition: color 0.3s;">Home</a>
+      <a href="#" style="color: #e5e5e5; text-decoration: none; margin-left: 20px; transition: color 0.3s;">About</a>
+      <a href="#" style="color: #e5e5e5; text-decoration: none; margin-left: 20px; transition: color 0.3s;">Statistics</a>
+      <a href="#" style="color: #e5e5e5; text-decoration: none; margin-left: 20px; transition: color 0.3s;">Settings</a>
     </nav>
   </header>
 
-  <main>
-    <div class="hero">
-      <i class="fa-solid fa-shield-halved"></i>
-      <h1>LinkGuard</h1>
-      <p class="tagline">✨ Professional Security Suite</p>
-      <p>Advanced URL security analysis powered by **AI** and real-time threat intelligence. Protect yourself from phishing, malware, and suspicious websites.</p>
+  <main style="text-align: center; max-width: 800px; width: 100%; padding: 50px 20px;">
+    <div class="hero" style="margin-bottom: 50px;">
+      <i class="fa-solid fa-shield-halved" style="font-size: 60px; color: #4c8bf5; margin-bottom: 10px;"></i>
+      <h1 style="font-size: 48px; margin: 0;">LinkGuard</h1>
+      <p class="tagline" style="color: #aaa; font-weight: bold; font-size: 18px; margin-bottom: 20px;">✨ Professional Security Suite</p>
+      <p style="color: #e5e5e5;">Advanced URL security analysis powered by **AI** and real-time threat intelligence. Protect yourself from phishing, malware, and suspicious websites.</p>
     </div>
 
-    <div class="checker-box">
-      <h2>Enter URL to analyze for security threats:</h2>
-      <div class="input-container">
-        <input id="urlInput" type="text" placeholder="https://example.com">
-        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+    <div class="checker-box" style="background-color: #16213e; padding: 40px; border-radius: 12px; border: 1px solid #404066;">
+      <h2 style="font-size: 22px; margin-top: 0; margin-bottom: 25px;">Enter URL to analyze for security threats:</h2>
+      <div class="input-container" style="position: relative; width: 100%; margin-bottom: 20px;">
+        <input id="urlInput" type="text" placeholder="https://example.com" style="width: 100%; padding: 15px 45px 15px 20px; border: 1px solid #404066; border-radius: 8px; background-color: #16213e; color: #e5e5e5; box-sizing: border-box;">
+        <i class="fa-solid fa-arrow-up-right-from-square" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: #aaa;"></i>
       </div>
-      <button onclick="checkUrl()">
-        <i class="fa-solid fa-lock"></i>
+      <button onclick="checkUrl()" style="width: 100%; padding: 18px; border: none; border-radius: 8px; background-image: linear-gradient(90deg, #4c8bf5 0%, #a4508b 100%); color: white; font-size: 18px; font-weight: bold; cursor: pointer; transition: opacity 0.3s; display: flex; align-items: center; justify-content: center;">
+        <i class="fa-solid fa-lock" style="margin-right: 10px;"></i>
         Analyze URL Security
       </button>
-      <div id="resultBox"></div>
+      <div id="resultBox" style="margin-top: 20px; padding: 15px; border-radius: 8px; font-weight: bold;"></div>
     </div>
   </main>
 
@@ -52,12 +51,16 @@
 
       if (!url) {
         resultBox.innerHTML = "⚠️ Please enter a URL.";
-        resultBox.className = "unsafe";
+        resultBox.style.backgroundColor = "#420d1b";
+        resultBox.style.color = "#f5c6cb";
+        resultBox.style.border = "1px solid #721c24";
         return;
       }
 
       resultBox.innerHTML = "⏳ Checking...";
-      resultBox.className = "loading";
+      resultBox.style.backgroundColor = "";
+      resultBox.style.color = "#fff";
+      resultBox.style.border = "";
 
       const reqBody = {
         client: { clientId: "linkguard", clientVersion: "1.0" },
@@ -79,14 +82,20 @@
 
         if (data.matches && data.matches.length > 0) {
           resultBox.innerHTML = `⚠️ Unsafe: ${data.matches[0].threatType}`;
-          resultBox.className = "unsafe";
+          resultBox.style.backgroundColor = "#420d1b";
+          resultBox.style.color = "#f5c6cb";
+          resultBox.style.border = "1px solid #721c24";
         } else {
           resultBox.innerHTML = "✅ Safe website";
-          resultBox.className = "safe";
+          resultBox.style.backgroundColor = "#123d24";
+          resultBox.style.color = "#d4edda";
+          resultBox.style.border = "1px solid #155724";
         }
       } catch (err) {
         resultBox.innerHTML = "❌ Error checking the URL.";
-        resultBox.className = "unsafe";
+        resultBox.style.backgroundColor = "#420d1b";
+        resultBox.style.color = "#f5c6cb";
+        resultBox.style.border = "1px solid #721c24";
         console.error(err);
       }
     }
