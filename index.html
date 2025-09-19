@@ -1,205 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LinkGuard</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-
-        body {
-            background-color: #0d1117;
-            color: #c9d1d9;
-            font-family: 'Poppins', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 600px;
-            text-align: center;
-        }
-
-        .header {
-            margin-bottom: 40px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5em;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .logo-icon {
-            font-size: 1.2em;
-            margin-right: 10px;
-            color: #4CAF50; /* A more subtle green/blue for a security feel */
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        h1 .logo-icon {
-             font-size: 1em;
-             margin-right: 10px;
-        }
-
-        .slogan {
-            font-size: 1.2em;
-            color: #8b949e;
-            margin-bottom: 5px;
-        }
-
-        .sub-slogan {
-            font-size: 1em;
-            color: #586069;
-        }
-        
-        .main-card {
-            background-color: #161b22;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            border: 1px solid #30363d;
-            text-align: left;
-        }
-
-        .card-header {
-            font-size: 1.4em;
-            font-weight: 600;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            color: #c9d1d9;
-        }
-
-        .card-header .lock-icon {
-            font-size: 1.2em;
-            margin-right: 10px;
-            color: #4CAF50;
-        }
-
-        .input-container {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .input-box {
-            width: 100%;
-            padding: 15px 50px 15px 20px;
-            background-color: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            color: #c9d1d9;
-            font-size: 1em;
-            outline: none;
-            transition: border-color 0.3s;
-            box-sizing: border-box;
-        }
-        
-        .input-box:focus {
-            border-color: #2183ff;
-            box-shadow: 0 0 0 3px rgba(33, 131, 255, 0.3);
-        }
-
-        .input-box::placeholder {
-            color: #8b949e;
-        }
-
-        .input-icon {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #8b949e;
-            font-size: 1.2em;
-        }
-
-        .analyze-button {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            background: linear-gradient(90deg, #2183ff, #29c1ff);
-            color: white;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .analyze-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(33, 131, 255, 0.4);
-        }
-
-        .analyze-button .lock-icon {
-            margin-right: 10px;
-        }
-
-        @media (max-width: 480px) {
-            .logo {
-                font-size: 2em;
-            }
-            .slogan {
-                font-size: 1em;
-            }
-            .sub-slogan {
-                font-size: 0.9em;
-            }
-            .main-card {
-                padding: 20px;
-            }
-            .card-header {
-                font-size: 1.2em;
-            }
-            .input-box, .analyze-button {
-                font-size: 0.9em;
-                padding: 12px;
-            }
-        }
-    </style>
+  <title>LinkGuard - Professional Security Suite</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <header>
+    <div class="logo">
+      <i class="fa-solid fa-shield-halved"></i>
+      <span>LinkGuard</span>
+    </div>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">About</a>
+      <a href="#">Statistics</a>
+      <a href="#">Settings</a>
+    </nav>
+  </header>
 
-    <div class="container">
-        <div class="header">
-            <div class="logo">
-                <span class="logo-icon">&#128737;</span> LinkGuard
-            </div>
-            <p class="slogan">Enterprise-grade URL security analysis</p>
-            <p class="sub-slogan">Protect your organization from malicious links and phishing attacks</p>
-        </div>
+  <main>
+    <div class="hero">
+      <i class="fa-solid fa-shield-halved"></i>
+      <h1>LinkGuard</h1>
+      <p class="tagline">✨ Professional Security Suite</p>
+      <p>Advanced URL security analysis powered by **AI** and real-time threat intelligence. Protect yourself from phishing, malware, and suspicious websites.</p>
+    </div>
 
-        <div class="main-card">
-            <div class="card-header">
-                <span class="lock-icon">&#128274;</span> Enter URL for Security Analysis
-            </div>
-            <div class="input-container">
-                <input type="text" class="input-box" placeholder="https://example.com" value="https://example.com">
-                <span class="input-icon">&#x27A4;</span> </div>
-            <button class="analyze-button">
-                <span class="lock-icon">&#128274;</span>
-                Analyze Link Security
-            </button>
-        </div>
-    </div>
+    <div class="checker-box">
+      <h2>Enter URL to analyze for security threats:</h2>
+      <div class="input-container">
+        <input id="urlInput" type="text" placeholder="https://example.com">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+      </div>
+      <button onclick="checkUrl()">
+        <i class="fa-solid fa-lock"></i>
+        Analyze URL Security
+      </button>
+      <div id="resultBox"></div>
+    </div>
+  </main>
 
+  <script>
+    const API_KEY = "AIzaSyBYmYChn-IvCN4dkEh9zSABRLs38LHpags"; // ⚠️ For testing only!
+    const ENDPOINT = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${API_KEY}`;
+
+    async function checkUrl() {
+      const url = document.getElementById("urlInput").value.trim();
+      const resultBox = document.getElementById("resultBox");
+
+      if (!url) {
+        resultBox.innerHTML = "⚠️ Please enter a URL.";
+        resultBox.className = "unsafe";
+        return;
+      }
+
+      resultBox.innerHTML = "⏳ Checking...";
+      resultBox.className = "loading";
+
+      const reqBody = {
+        client: { clientId: "linkguard", clientVersion: "1.0" },
+        threatInfo: {
+          threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE"],
+          platformTypes: ["ANY_PLATFORM"],
+          threatEntryTypes: ["URL"],
+          threatEntries: [{ url }]
+        }
+      };
+
+      try {
+        const resp = await fetch(ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(reqBody)
+        });
+        const data = await resp.json();
+
+        if (data.matches && data.matches.length > 0) {
+          resultBox.innerHTML = `⚠️ Unsafe: ${data.matches[0].threatType}`;
+          resultBox.className = "unsafe";
+        } else {
+          resultBox.innerHTML = "✅ Safe website";
+          resultBox.className = "safe";
+        }
+      } catch (err) {
+        resultBox.innerHTML = "❌ Error checking the URL.";
+        resultBox.className = "unsafe";
+        console.error(err);
+      }
+    }
+  </script>
 </body>
 </html>
