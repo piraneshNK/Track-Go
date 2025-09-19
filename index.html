@@ -1,74 +1,157 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LinkGuard - Phishing Link Checker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin: 50px; background: #f9fafc; }
-    input { width: 300px; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
-    button { padding: 10px 15px; margin-left: 5px; border: none; border-radius: 6px; background: #007BFF; color: white; cursor: pointer; }
-    button:hover { background: #0056b3; }
-    #resultBox { margin-top: 30px; padding: 20px; border-radius: 8px; width: 400px; margin-left: auto; margin-right: auto; font-size: 18px; font-weight: bold; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container {
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 10px;
+      color: #0d253f;
+    }
+    p {
+      color: #555;
+      margin-bottom: 30px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #007BFF;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    #resultBox {
+      margin-top: 30px;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 600;
+      min-height: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transition: 0.3s;
+    }
     .safe { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-    .unsafe { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .phishing { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+    .malware { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .error { background: #f0f0f0; color: #555; border: 1px solid #ccc; }
+    footer {
+      margin-top: 40px;
+      font-size: 14px;
+      color: #888;
+    }
   </style>
 </head>
 <body>
-  <h1>🔍 LinkGuard</h1>
-  <p>Paste a link below to check if it’s safe.</p>
 
-  <input id="urlInput" type="text" placeholder="https://example.com">
+<div class="container">
+  <h1>🔍 LinkGuard</h1>
+  <p>Check if a URL is safe or malicious before clicking.</p>
+
+  <input id="urlInput" type="text" placeholder="Paste a URL here">
   <button onclick="checkUrl()">Check</button>
 
-  <div id="resultBox">No scan yet</div>
+  <div id="resultBox" class="error">No scan yet</div>
+</div>
 
-  <script>
-    const API_KEY = "AIzaSyBYmYChn-IvCN4dkEh9zSABRLs38LHpags"; // ⚠️ For testing only!
-    const ENDPOINT = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${API_KEY}`;
+<footer>
+  &copy; 2025 LinkGuard | Powered by Google Safe Browsing API
+</footer>
 
-    async function checkUrl() {
-      const url = document.getElementById("urlInput").value.trim();
-      const resultBox = document.getElementById("resultBox");
+<script>
+  const API_KEY = "AIzaSyBYmYChn-IvCN4dkEh9zSABRLs38LHpags"; // ⚠️ For testing only
+  const ENDPOINT = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${API_KEY}`;
 
-      if (!url) {
-        resultBox.innerHTML = "⚠️ Please enter a URL.";
-        resultBox.className = "unsafe";
-        return;
-      }
+  async function checkUrl() {
+    const url = document.getElementById("urlInput").value.trim();
+    const resultBox = document.getElementById("resultBox");
 
-      resultBox.innerHTML = "⏳ Checking...";
-      resultBox.className = "";
-
-      const reqBody = {
-        client: { clientId: "linkguard", clientVersion: "1.0" },
-        threatInfo: {
-          threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE"],
-          platformTypes: ["ANY_PLATFORM"],
-          threatEntryTypes: ["URL"],
-          threatEntries: [{ url }]
-        }
-      };
-
-      try {
-        const resp = await fetch(ENDPOINT, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(reqBody)
-        });
-        const data = await resp.json();
-
-        if (data.matches && data.matches.length > 0) {
-          resultBox.innerHTML = `⚠️ Unsafe: ${data.matches[0].threatType}`;
-          resultBox.className = "unsafe";
-        } else {
-          resultBox.innerHTML = "✅ Safe website";
-          resultBox.className = "safe";
-        }
-      } catch (err) {
-        resultBox.innerHTML = "❌ Error checking the URL.";
-        resultBox.className = "unsafe";
-        console.error(err);
-      }
+    if (!url) {
+      resultBox.innerHTML = "⚠️ Please enter a URL.";
+      resultBox.className = "error";
+      return;
     }
-  </script>
+
+    resultBox.innerHTML = "⏳ Checking...";
+    resultBox.className = "error";
+
+    const reqBody = {
+      client: { clientId: "linkguard", clientVersion: "1.0" },
+      threatInfo: {
+        threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE"],
+        platformTypes: ["ANY_PLATFORM"],
+        threatEntryTypes: ["URL"],
+        threatEntries: [{ url }]
+      }
+    };
+
+    try {
+      const resp = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reqBody)
+      });
+      const data = await resp.json();
+
+      if (data.matches && data.matches.length > 0) {
+        const threatType = data.matches[0].threatType.toLowerCase();
+        let cls = "phishing";
+
+        if (threatType === "malware") cls = "malware";
+        else if (threatType === "social_engineering") cls = "phishing";
+        else if (threatType === "unwanted_software") cls = "phishing";
+
+        resultBox.innerHTML = `⚠️ Unsafe: ${threatType.replace(/_/g, " ")}`;
+        resultBox.className = cls;
+      } else {
+        resultBox.innerHTML = "✅ Safe website";
+        resultBox.className = "safe";
+      }
+    } catch (err) {
+      console.error(err);
+      resultBox.innerHTML = "❌ Error checking the URL.";
+      resultBox.className = "error";
+    }
+  }
+</script>
+
 </body>
 </html>
