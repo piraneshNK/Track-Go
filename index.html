@@ -3,239 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LinkGuard - Professional Security Suite</title>
+    <title>LinkGuard</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #0c0d12;
-            color: #e0e6f0;
-            margin: 0;
-            padding: 0;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: 'Poppins', sans-serif;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
+            margin: 0;
+            padding: 20px;
         }
 
-        header {
+        .container {
             width: 100%;
-            background-color: #11131a;
-            padding: 15px 50px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #2d303b;
-            position: fixed;
-            top: 0;
-            z-index: 1000;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 40px;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            font-size: 24px;
+            justify-content: center;
+            font-size: 2.5em;
             font-weight: 600;
-            color: #a4c3ff;
+            margin-bottom: 10px;
         }
 
         .logo-icon {
-            width: 30px;
-            height: 30px;
-            background-color: #5d8fff;
-            border-radius: 6px;
+            font-size: 1.2em;
             margin-right: 10px;
+            color: #4CAF50; /* A more subtle green/blue for a security feel */
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
-            color: #fff;
-        }
-
-        nav a {
-            color: #a4aab9;
-            text-decoration: none;
-            margin-left: 25px;
-            font-size: 16px;
-            transition: color 0.3s ease;
-        }
-
-        nav a:hover {
-            color: #e0e6f0;
-        }
-
-        main {
-            text-align: center;
-            padding: 120px 20px 50px;
-            max-width: 800px;
-            width: 100%;
-        }
-
-        .hero h1 {
-            font-size: 48px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: #a4c3ff;
         }
         
-        .hero .subtitle {
-            font-size: 18px;
-            color: #8c92a3;
-            margin-bottom: 40px;
-        }
-        
-        .hero p {
-            font-size: 18px;
-            line-height: 1.6;
-            color: #b0b8c6;
-            max-width: 600px;
-            margin: 0 auto 30px;
+        h1 .logo-icon {
+             font-size: 1em;
+             margin-right: 10px;
         }
 
-        .url-form {
-            background-color: #11131a;
-            border: 1px solid #2d303b;
+        .slogan {
+            font-size: 1.2em;
+            color: #8b949e;
+            margin-bottom: 5px;
+        }
+
+        .sub-slogan {
+            font-size: 1em;
+            color: #586069;
+        }
+        
+        .main-card {
+            background-color: #161b22;
+            padding: 30px;
             border-radius: 12px;
-            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid #30363d;
+            text-align: left;
+        }
+
+        .card-header {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 20px;
             display: flex;
-            flex-direction: column;
-            gap: 20px;
+            align-items: center;
+            color: #c9d1d9;
+        }
+
+        .card-header .lock-icon {
+            font-size: 1.2em;
+            margin-right: 10px;
+            color: #4CAF50;
         }
 
         .input-container {
             position: relative;
-            width: 100%;
+            margin-bottom: 20px;
         }
 
-        .url-input {
+        .input-box {
             width: 100%;
             padding: 15px 50px 15px 20px;
-            background-color: #0c0d12;
-            border: 1px solid #2d303b;
+            background-color: #0d1117;
+            border: 1px solid #30363d;
             border-radius: 8px;
-            color: #e0e6f0;
-            font-size: 16px;
-            box-sizing: border-box;
+            color: #c9d1d9;
+            font-size: 1em;
             outline: none;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
         }
         
-        .url-input:focus {
-            border-color: #5d8fff;
+        .input-box:focus {
+            border-color: #2183ff;
+            box-shadow: 0 0 0 3px rgba(33, 131, 255, 0.3);
         }
 
-        .url-input-icon {
+        .input-box::placeholder {
+            color: #8b949e;
+        }
+
+        .input-icon {
             position: absolute;
-            right: 20px;
+            right: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: #8c92a3;
-            cursor: pointer;
-            font-size: 20px;
+            color: #8b949e;
+            font-size: 1.2em;
         }
-        
-        .analyze-btn {
-            padding: 16px;
+
+        .analyze-button {
+            width: 100%;
+            padding: 15px;
             border: none;
             border-radius: 8px;
-            background: linear-gradient(to right, #5d8fff, #8c5dff);
-            color: white;
-            font-size: 18px;
+            font-size: 1.1em;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.3s ease;
-        }
-
-        .analyze-btn:hover {
-            opacity: 0.9;
+            background: linear-gradient(90deg, #2183ff, #29c1ff);
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .result-box {
-            margin-top: 30px;
-            padding: 20px;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: 500;
-            text-align: center;
-            display: none; /* Initially hidden */
+        .analyze-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(33, 131, 255, 0.4);
         }
 
-        .result-box.safe {
-            background-color: #1e332a;
-            color: #5cb85c;
+        .analyze-button .lock-icon {
+            margin-right: 10px;
         }
 
-        .result-box.unsafe {
-            background-color: #3b2727;
-            color: #f06a6a;
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 2em;
+            }
+            .slogan {
+                font-size: 1em;
+            }
+            .sub-slogan {
+                font-size: 0.9em;
+            }
+            .main-card {
+                padding: 20px;
+            }
+            .card-header {
+                font-size: 1.2em;
+            }
+            .input-box, .analyze-button {
+                font-size: 0.9em;
+                padding: 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <div class="logo-icon">🛡️</div>
-            LinkGuard
-        </div>
-        <nav>
-            <a href="#">Home</a>
-            <a href="#">About</a>
-            <a href="#">Statistics</a>
-            <a href="#">Settings</a>
-        </nav>
-    </header>
 
-    <main>
-        <div class="hero">
-            <h1>LinkGuard</h1>
-            <div class="subtitle">Professional Security Suite</div>
-            <p>Advanced URL security analysis powered by AI and real-time threat intelligence. Protect yourself from phishing, malware, and suspicious websites.</p>
-        </div>
-        
-        <div class="url-form">
-            <h3>Enter URL to analyze for security threats:</h3>
-            <div class="input-container">
-                <input type="text" id="urlInput" class="url-input" placeholder="https://example.com" />
-                <span class="url-input-icon">🔗</span>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <span class="logo-icon">&#128737;</span> LinkGuard
             </div>
-            <button class="analyze-btn" onclick="analyzeUrl()">
-                🛡️ Analyze URL Security
+            <p class="slogan">Enterprise-grade URL security analysis</p>
+            <p class="sub-slogan">Protect your organization from malicious links and phishing attacks</p>
+        </div>
+
+        <div class="main-card">
+            <div class="card-header">
+                <span class="lock-icon">&#128274;</span> Enter URL for Security Analysis
+            </div>
+            <div class="input-container">
+                <input type="text" class="input-box" placeholder="https://example.com" value="https://example.com">
+                <span class="input-icon">&#x27A4;</span> </div>
+            <button class="analyze-button">
+                <span class="lock-icon">&#128274;</span>
+                Analyze Link Security
             </button>
         </div>
-        
-        <div id="resultBox" class="result-box"></div>
-    </main>
+    </div>
 
-    <script>
-        function analyzeUrl() {
-            const urlInput = document.getElementById('urlInput');
-            const resultBox = document.getElementById('resultBox');
-            const url = urlInput.value;
-
-            if (url.trim() === '') {
-                resultBox.textContent = 'Please enter a URL.';
-                resultBox.className = 'result-box unsafe';
-                resultBox.style.display = 'block';
-                return;
-            }
-
-            // This is where you would make an API call to your backend.
-            // For this example, we'll simulate a response.
-            resultBox.textContent = 'Analyzing...';
-            resultBox.className = 'result-box';
-            resultBox.style.display = 'block';
-
-            setTimeout(() => {
-                // Dummy logic for a safe vs. unsafe URL
-                if (url.includes('malicious') || url.includes('phishing')) {
-                    resultBox.textContent = 'Warning: This URL is a potential threat!';
-                    resultBox.className = 'result-box unsafe';
-                } else {
-                    resultBox.textContent = 'This URL appears to be safe.';
-                    resultBox.className = 'result-box safe';
-                }
-            }, 1500); // Simulate a 1.5 second network delay
-        }
-    </script>
 </body>
 </html>
